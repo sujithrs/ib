@@ -16,6 +16,7 @@ class CustomView < UIView
   outlet_collection :yellowLabelCollection
 
   ib_action :someAction
+  ib_action :segueAction, UIStoryboardSegue
 
   def anotherAction button
   end
@@ -30,6 +31,9 @@ class CustomView < UIView
   end
 
   def actionWithoutArgs
+  end
+
+  def actionWithDefaultedArgs(sender = nil) #comment
   end
 
 end

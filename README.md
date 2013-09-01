@@ -1,6 +1,8 @@
-# IB 
+# IB
 
-rubymotion interface builder support (yes, with outlets)
+RubyMotion interface builder support (yes, with outlets)
+
+<a href='http://spellhub.com/projects/project/7'><img src="http://spellhub.com/projects/status/7" height="18"></a>
 
 [**Change Log**](https://github.com/yury/ib/wiki/Change-Log)
 
@@ -18,15 +20,17 @@ Or install it yourself as:
 
     $ gem install ib
 
+Or use RubyMotion [templates by @infiniteNIL](https://github.com/infiniteNIL/RubyMotionTemplates)
+
 In your Rake file:
 
 ```ruby
 
-$:.unshift("/Library/RubyMotion/lib")  
-require 'motion/project'  
+$:.unshift("/Library/RubyMotion/lib")
+require 'motion/project'
 
 # if you use bundler
-require 'bundler' 
+require 'bundler'
 Bundler.require
 
 # if you are not using bundler
@@ -52,7 +56,7 @@ class HelloController < UIViewController
   # define ib outlet
   outlet :title, UILabel # @property IBOutlet UILabel * title;
   outlet :untyped_label  # @property IBOutlet id untyped_label;
-  
+
   # define ib outlet collection
   outlet_collection :labels, UILabel # @property IBOutletCollection(UILabel) NSArray * labels;
 
@@ -62,10 +66,12 @@ class HelloController < UIViewController
 end
 ```
 
-**NOTE:** If you include methods and attributes from module, you can use `ib_outlet` and `ib_action` to make them visible in designer
+**NOTE:** If you include methods and attributes from module, you can use `ib_outlet` and `ib_action` to make them visible in Interface Builder
 
 ```ruby
 module TouchLogger
+  outlet :my_button, UIButton
+
   def controlTouched sender
     puts "touched"
   end
@@ -76,7 +82,9 @@ class LogController < UIViewController
 
   include TouchLogger
 
+  ib_outlet :my_button
   ib_action :controlTouched
+
 end
 ```
 
@@ -110,15 +118,23 @@ class HelloController < UIViewController
 end
 ```
 
-Run `rake ib:open` create Storyboard or nibs (put them in resources folder) and you will be able to bind outlets and actions to your ruby code.
+### Using Interface Builder
 
-**Note** : add ib.xcodeproj to your .gitignore
+Running `rake ib:open` will create a ib.xcodeproj in the root of your app and open XCode. You can create Storyboards or nibs, and save them in your `resources` directory in order to be picked up by RubyMotion.
+
+Everytime you make a change in your ruby files (like adding a new outlet or action method) you have to run `rake ib:open` in order to let Interface Builder see the changes.
+
+**Tip** : add ib.xcodeproj to your .gitignore
+
+### How it works
+
+This gem parses your Ruby code and generates two Objective-c files (Stub.m and Stub.h) which are populated with the classes, methods and outlets you have defined. This is necessary for Interface Builder to bind outlets and actions to your code.
 
 # Sample app
 
 Here is [sample app](https://github.com/yury/ibsample)
 
-1. clone it 
+1. clone it
 2. run `bundle`
 3. run `rake ib:open` to change story board
 4. run `rake` to run app in simulator
@@ -128,6 +144,10 @@ Here is [sample app](https://github.com/yury/ibsample)
 # Another Sample app
 
 Here is [another sample app](https://github.com/hqmq/whereami)
+
+# OS X Sample app
+
+Here is [OS X sample app](https://github.com/MarkVillacampa/motion-osx-ib)
 
 You can play around with it in the same way as the Sample app above. This sample uses a single xib file rather than a storyboard.
 

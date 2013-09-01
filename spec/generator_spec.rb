@@ -7,7 +7,19 @@ describe IB::Generator do
     files = IB::Parser.new.find_all("spec/fixtures")
     stubs = IB::Generator.new.generate_objc(files)
     stubs.should == <<-OBJC
-@interface CustomView : UIView
+@interface AppDelegate
+
+@property IBOutlet UIWindow * window;
+@property IBOutlet UINavigationController * navigationController;
+
+
+
+
+
+@end
+
+
+@interface CustomView: UIView
 
 @property IBOutlet UIGreenLabel * greenLabel;
 @property IBOutlet UILabel * redLabel;
@@ -20,15 +32,17 @@ describe IB::Generator do
 @property IBOutletCollection(id) NSArray * yellowLabelCollection;
 
 -(IBAction) someAction:(id) sender;
+-(IBAction) segueAction:(UIStoryboardSegue*) sender;
 -(IBAction) anotherAction:(id) button;
 -(IBAction) actionWithComment:(id) sender;
 -(IBAction) actionWithBrackets:(id) sender;
 -(IBAction) actionWithoutArgs;
+-(IBAction) actionWithDefaultedArgs:(id) sender;
 
 @end
 
 
-@interface EmptyView : UIView
+@interface EmptyView: UIView
 
 
 
@@ -39,7 +53,7 @@ describe IB::Generator do
 @end
 
 
-@interface AnotherView : EmptyView
+@interface AnotherView: EmptyView
 
 
 

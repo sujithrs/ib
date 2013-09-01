@@ -27,7 +27,7 @@ OBJC
 #{generate_objc_impl(files)}
 OBJC
     end
-    
+
   end
 
   def generate_objc files
@@ -35,7 +35,7 @@ OBJC
     files.map do |path, infos|
       infos.each do |info|
         output << <<-OBJC
-@interface #{info[:class][0][0]} : #{info[:class][0][1]}
+@interface #{info[:class][0][0]}#{info[:class][0][1] ? ": #{info[:class][0][1]}" : ""}
 
 #{info[:outlets].map {|name, type| "@property IBOutlet #{generate_type(type)} #{name};" }.join("\n")}
 
@@ -71,6 +71,6 @@ OBJC
   end
 
   def generate_action action
-    action[1] ? "#{action[0]}:(id) #{action[1]}" : "#{action[0]}"
+    action[1] ? "#{action[0]}:(#{action[2] ? "#{action[2]}*" : 'id'}) #{action[1]}" : "#{action[0]}"
   end
 end

@@ -1,10 +1,11 @@
 class IB::Parser
   NAME_REGEX = /[a-zA-Z][_a-zA-Z0-9]*/
-  CLASS_REGEX  = /^[ \t]*class[ \t]+(#{NAME_REGEX})[ \t]*<[ \t]*(#{NAME_REGEX})/
+  CLASS_REGEX  = /^[ \t]*class[ \t]+(#{NAME_REGEX})([ \t]*<[ \t]*(#{NAME_REGEX}))?/
   OUTLET_REGEX = /^[ \t]+(ib_)?outlet(_accessor)?[ \t]+:(#{NAME_REGEX})[ \t]*?(,[ \t]*['"]?(#{NAME_REGEX}))?/
   OUTLET_COLLECTION_REGEX = /^[ \t]+(ib_)?outlet_collection(_accessor)?[ \t]+:(#{NAME_REGEX})[ \t]*?(,[ \t]*['"]?(#{NAME_REGEX}))?/
-  METHOD_REF_REGEX = /^[ \t]+(ib_action)[ \t]:(#{NAME_REGEX})/
-  METHOD_DEF_REGEX = /^[ \t]+(def)[ \t](#{NAME_REGEX})([ \t(]+)?(#{NAME_REGEX})?([ \t)]*)(#.*)?$/
+  METHOD_ARGUMENT_REGEX = /(#{NAME_REGEX})(?:[ \t]*=[^,#)]*)?/
+  METHOD_REF_REGEX = /^[ \t]+(ib_action)[ \t]:(#{NAME_REGEX})[ \t]*?(,[ \t]*['"]?(#{NAME_REGEX}))?/
+  METHOD_DEF_REGEX = /^[ \t]+(def)[ \t]#{METHOD_ARGUMENT_REGEX}([ \t(]+)?#{METHOD_ARGUMENT_REGEX}?([ \t)]*)(#.*)?$/
   ACTION_REGEX = Regexp.union METHOD_DEF_REGEX, METHOD_REF_REGEX
 
   def find_all(dir_or_files)
@@ -15,7 +16,7 @@ class IB::Parser
     else
       Dir.glob("#{dir_or_files.to_s}/**/*.rb").to_a
     end
-    
+
     files.each do |file|
       infos = find(file)
       if infos.length > 0
@@ -39,13 +40,20 @@ class IB::Parser
     pairs << src.length
     (pairs.length - 1).times do |i|
       s = src[pairs[i], pairs[i+1]]
-      info = {class: find_class(s)}
+      info = {:class => find_class(s)}
 
       info[:outlets] = find_outlets(s)
       info[:outlet_collections] = find_outlet_collections(s)
       info[:actions] = find_actions(s)
 
       info[:path] = path
+
+      # skip empty classes
+      if info[:outlets].empty? &&
+        info[:outlet_collections].empty? &&
+        info[:actions].empty? && info[:class][0][1].nil?
+        next
+      end
 
       infos << info
     end
@@ -54,7 +62,9 @@ class IB::Parser
   end
 
   def find_class src
-    src.scan CLASS_REGEX
+    src.scan(CLASS_REGEX).map do |groups|
+      [groups[0], groups[2]]
+    end
   end
 
   def find_outlets src
@@ -72,9 +82,9 @@ class IB::Parser
   def find_actions src
     src.scan(ACTION_REGEX).map do |groups|
       if groups[0] == "def"
-        [groups[1], groups[3]]
+        [groups[1], groups[3], nil]
       elsif groups[6] == "ib_action"
-        [groups[7], 'sender']
+        [groups[7], 'sender', groups[9]]
       else
         nil
       end
